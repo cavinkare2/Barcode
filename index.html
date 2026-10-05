@@ -1,61 +1,70 @@
-```html
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Barcode Scanner</title>
+  <title>QR & Barcode Scanner</title>
 
-  <!-- Barcode / QR Scanner Library -->
   <script src="https://unpkg.com/html5-qrcode"></script>
 
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       font-family: Arial, sans-serif;
-      background: #f5f5f5;
+      background: #f4f6f8;
       margin: 0;
       padding: 20px;
-      text-align: center;
+      color: #202124;
+    }
+
+    .container {
+      max-width: 520px;
+      margin: auto;
     }
 
     .card {
-      max-width: 500px;
-      margin: auto;
       background: white;
       border-radius: 16px;
       padding: 20px;
-      box-shadow: 0 4px 18px rgba(0,0,0,0.12);
+      box-shadow: 0 5px 20px rgba(0,0,0,0.10);
     }
 
     h2 {
       margin-top: 0;
+      text-align: center;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 20px;
     }
 
     #reader {
       width: 100%;
-      margin-top: 20px;
+      margin-top: 15px;
+      border-radius: 12px;
+      overflow: hidden;
     }
 
-    #resultBox {
-      margin-top: 20px;
-      padding: 18px;
-      border-radius: 10px;
-      background: #f0f0f0;
-    }
-
-    #barcodeResult {
-      font-size: 22px;
-      font-weight: bold;
-      word-break: break-all;
+    .buttons {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
     }
 
     button {
-      padding: 12px 20px;
-      margin: 8px;
+      flex: 1;
       border: none;
       border-radius: 8px;
-      font-size: 16px;
+      padding: 13px 10px;
+      font-size: 15px;
+      font-weight: bold;
       cursor: pointer;
     }
 
@@ -69,131 +78,709 @@
       color: white;
     }
 
-    #copyBtn {
-      background: #188038;
-      color: white;
+    #clearBtn {
+      background: #e8eaed;
+      color: #202124;
+    }
+
+    .result {
+      margin-top: 20px;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .result-title {
+      background: #f1f3f4;
+      padding: 12px 15px;
+      font-weight: bold;
+    }
+
+    .row {
+      padding: 12px 15px;
+      border-top: 1px solid #eee;
+    }
+
+    .label {
+      font-size: 12px;
+      color: #777;
+      margin-bottom: 5px;
+      text-transform: uppercase;
+    }
+
+    .value {
+      font-size: 16px;
+      font-weight: 600;
+      word-break: break-word;
+    }
+
+    #codeValue {
+      font-size: 23px;
+    }
+
+    .info-box {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 10px;
+      display: none;
+    }
+
+    .info-line {
+      margin-bottom: 10px;
+    }
+
+    .info-label {
+      font-weight: bold;
+    }
+
+    a {
+      color: #1a73e8;
+      word-break: break-all;
+    }
+
+    .status {
+      text-align: center;
+      font-size: 14px;
+      color: #666;
+      margin-top: 10px;
     }
   </style>
 </head>
 
 <body>
 
+<div class="container">
+
   <div class="card">
 
-    <h2>Barcode Scanner</h2>
+    <h2>QR & Barcode Scanner</h2>
 
-    <button id="startBtn" onclick="startScanner()">
-      Start Scanner
-    </button>
+    <div class="subtitle">
+      Scan QR codes, EAN, UPC, Code 128 and other supported barcodes
+    </div>
 
-    <button id="stopBtn" onclick="stopScanner()">
-      Stop Scanner
-    </button>
+    <div class="buttons">
+
+      <button id="startBtn" onclick="startScanner()">
+        Start Scanner
+      </button>
+
+      <button id="stopBtn" onclick="stopScanner()">
+        Stop
+      </button>
+
+      <button id="clearBtn" onclick="clearResult()">
+        Clear
+      </button>
+
+    </div>
 
     <div id="reader"></div>
 
-    <div id="resultBox">
-      <div>Scanned Barcode</div>
-      <br>
-      <div id="barcodeResult">No barcode scanned</div>
+    <div class="status" id="status">
+      Scanner not started
     </div>
 
-    <button id="copyBtn" onclick="copyBarcode()">
-      Copy Barcode
-    </button>
+
+    <div class="result">
+
+      <div class="result-title">
+        Scan Result
+      </div>
+
+      <div class="row">
+        <div class="label">Scanned Value</div>
+        <div class="value" id="codeValue">
+          No code scanned
+        </div>
+      </div>
+
+
+      <div class="row">
+        <div class="label">Code Format</div>
+        <div class="value" id="codeFormat">
+          -
+        </div>
+      </div>
+
+
+      <div class="row">
+        <div class="label">Detected Content Type</div>
+        <div class="value" id="contentType">
+          -
+        </div>
+      </div>
+
+    </div>
+
+
+    <div class="info-box" id="infoBox">
+
+      <div class="label">
+        Additional Information Found
+      </div>
+
+      <div id="additionalInfo"></div>
+
+    </div>
+
 
   </div>
+
+</div>
 
 
 <script>
 
-  let html5QrCode;
-  let lastBarcode = "";
+let scanner = null;
+let lastScannedValue = "";
+let scanning = false;
 
-  function startScanner() {
 
-    html5QrCode = new Html5Qrcode("reader");
+function startScanner() {
 
-    const config = {
-      fps: 10,
-      qrbox: {
-        width: 300,
-        height: 150
-      }
-    };
-
-    html5QrCode.start(
-      {
-        facingMode: "environment"
-      },
-      config,
-      barcodeScanned,
-      scanError
-    )
-    .catch(function(error) {
-      alert("Unable to start camera: " + error);
-    });
-
+  if (scanning) {
+    return;
   }
 
+  scanner = new Html5Qrcode("reader");
 
-  function barcodeScanned(decodedText, decodedResult) {
+  const config = {
 
-    // Prevent repeatedly reading the same barcode
-    if (decodedText === lastBarcode) {
-      return;
+    fps: 10,
+
+    qrbox: function(viewfinderWidth, viewfinderHeight) {
+
+      let width = Math.floor(viewfinderWidth * 0.85);
+
+      let height = Math.floor(width * 0.45);
+
+      return {
+        width: width,
+        height: height
+      };
+    },
+
+    aspectRatio: 1.333334
+  };
+
+
+  scanner.start(
+
+    {
+      facingMode: "environment"
+    },
+
+    config,
+
+    onScanSuccess,
+
+    function(errorMessage) {
+      // Normal frame scanning errors are ignored
     }
 
-    lastBarcode = decodedText;
+  )
 
-    document.getElementById("barcodeResult").innerText = decodedText;
+  .then(function() {
 
-    console.log("Barcode:", decodedText);
+    scanning = true;
 
-    // Optional:
-    // stop scanner immediately after reading
-    // stopScanner();
+    document.getElementById("status").innerText =
+      "Scanner active - point camera at QR code or barcode";
+
+  })
+
+  .catch(function(error) {
+
+    document.getElementById("status").innerText =
+      "Camera error: " + error;
+
+  });
+
+}
+
+
+
+function onScanSuccess(decodedText, decodedResult) {
+
+  if (decodedText === lastScannedValue) {
+    return;
   }
 
-
-  function scanError(errorMessage) {
-    // Ignore normal scanning errors
-  }
+  lastScannedValue = decodedText;
 
 
-  function stopScanner() {
-
-    if (!html5QrCode) {
-      return;
-    }
-
-    html5QrCode.stop()
-      .then(function() {
-        console.log("Scanner stopped");
-      })
-      .catch(function(error) {
-        console.log(error);
-      });
-
-  }
+  let format = "Unknown";
 
 
-  function copyBarcode() {
-
-    const barcode =
-      document.getElementById("barcodeResult").innerText;
+  try {
 
     if (
-      !barcode ||
-      barcode === "No barcode scanned"
+      decodedResult &&
+      decodedResult.result &&
+      decodedResult.result.format
     ) {
-      return;
+
+      format =
+        decodedResult.result.format.formatName ||
+        decodedResult.result.format.toString();
+
     }
 
-    navigator.clipboard.writeText(barcode);
+  } catch(error) {
 
-    alert("Barcode copied: " + barcode);
+    console.log(error);
+
   }
+
+
+  document.getElementById("codeValue").innerText =
+    decodedText;
+
+
+  document.getElementById("codeFormat").innerText =
+    format;
+
+
+  analyseContent(decodedText, format);
+
+
+  document.getElementById("status").innerText =
+    "Code scanned successfully";
+
+}
+
+
+
+function analyseContent(value, format) {
+
+  const contentType =
+    document.getElementById("contentType");
+
+  const infoBox =
+    document.getElementById("infoBox");
+
+  const info =
+    document.getElementById("additionalInfo");
+
+
+  info.innerHTML = "";
+
+  infoBox.style.display = "block";
+
+
+  /*
+  --------------------------------
+  URL
+  --------------------------------
+  */
+
+  if (
+    value.startsWith("http://") ||
+    value.startsWith("https://")
+  ) {
+
+    contentType.innerText = "Website / URL";
+
+    info.innerHTML = `
+      <div class="info-line">
+        <span class="info-label">Website:</span><br>
+        <a href="${escapeHtml(value)}"
+           target="_blank">
+           ${escapeHtml(value)}
+        </a>
+      </div>
+    `;
+
+    return;
+  }
+
+
+
+  /*
+  --------------------------------
+  EMAIL
+  --------------------------------
+  */
+
+  if (value.toLowerCase().startsWith("mailto:")) {
+
+    contentType.innerText = "Email";
+
+    let email =
+      value.substring(7);
+
+    info.innerHTML = `
+      <div class="info-line">
+        <span class="info-label">Email:</span>
+        ${escapeHtml(email)}
+      </div>
+    `;
+
+    return;
+  }
+
+
+
+  /*
+  --------------------------------
+  PHONE NUMBER
+  --------------------------------
+  */
+
+  if (value.toLowerCase().startsWith("tel:")) {
+
+    contentType.innerText = "Phone Number";
+
+    let number =
+      value.substring(4);
+
+    info.innerHTML = `
+      <div class="info-line">
+        <span class="info-label">Phone:</span>
+        ${escapeHtml(number)}
+      </div>
+    `;
+
+    return;
+  }
+
+
+
+  /*
+  --------------------------------
+  WIFI QR CODE
+  --------------------------------
+  */
+
+  if (value.startsWith("WIFI:")) {
+
+    contentType.innerText = "Wi-Fi Network";
+
+    let wifi =
+      parseWifiQR(value);
+
+    info.innerHTML = `
+
+      <div class="info-line">
+        <span class="info-label">Network:</span>
+        ${escapeHtml(wifi.ssid || "Not available")}
+      </div>
+
+      <div class="info-line">
+        <span class="info-label">Security:</span>
+        ${escapeHtml(wifi.type || "Not available")}
+      </div>
+
+      <div class="info-line">
+        <span class="info-label">Password:</span>
+        ${escapeHtml(wifi.password || "Not available")}
+      </div>
+
+    `;
+
+    return;
+  }
+
+
+
+  /*
+  --------------------------------
+  GEO LOCATION
+  --------------------------------
+  */
+
+  if (value.toLowerCase().startsWith("geo:")) {
+
+    contentType.innerText = "Location";
+
+    info.innerHTML = `
+      <div class="info-line">
+        <span class="info-label">Coordinates:</span>
+        ${escapeHtml(value.substring(4))}
+      </div>
+    `;
+
+    return;
+  }
+
+
+
+  /*
+  --------------------------------
+  SMS
+  --------------------------------
+  */
+
+  if (
+    value.toLowerCase().startsWith("sms:") ||
+    value.toLowerCase().startsWith("smsto:")
+  ) {
+
+    contentType.innerText = "SMS";
+
+    info.innerHTML = `
+      <div class="info-line">
+        ${escapeHtml(value)}
+      </div>
+    `;
+
+    return;
+  }
+
+
+
+  /*
+  --------------------------------
+  VCARD
+  --------------------------------
+  */
+
+  if (
+    value.toUpperCase().includes("BEGIN:VCARD")
+  ) {
+
+    contentType.innerText =
+      "Contact / VCard";
+
+    info.innerHTML = `
+      <pre style="
+        white-space:pre-wrap;
+        word-break:break-word;
+      ">${escapeHtml(value)}</pre>
+    `;
+
+    return;
+  }
+
+
+
+  /*
+  --------------------------------
+  STANDARD NUMERIC BARCODE
+  --------------------------------
+  */
+
+  if (/^\d+$/.test(value)) {
+
+    contentType.innerText =
+      "Numeric Barcode / Product Code";
+
+    let extra = "";
+
+    if (value.length === 13) {
+
+      extra = `
+        <div class="info-line">
+          <span class="info-label">
+            Likely Standard:
+          </span>
+          EAN-13 / GTIN-13
+        </div>
+      `;
+
+    }
+
+    else if (value.length === 12) {
+
+      extra = `
+        <div class="info-line">
+          <span class="info-label">
+            Likely Standard:
+          </span>
+          UPC-A / GTIN-12
+        </div>
+      `;
+
+    }
+
+    else if (value.length === 8) {
+
+      extra = `
+        <div class="info-line">
+          <span class="info-label">
+            Likely Standard:
+          </span>
+          EAN-8
+        </div>
+      `;
+
+    }
+
+
+    info.innerHTML = `
+
+      <div class="info-line">
+        <span class="info-label">
+          Barcode Number:
+        </span>
+        ${escapeHtml(value)}
+      </div>
+
+      <div class="info-line">
+        <span class="info-label">
+          Number of Digits:
+        </span>
+        ${value.length}
+      </div>
+
+      ${extra}
+
+      <div class="info-line"
+           style="
+             margin-top:15px;
+             color:#666;
+             font-size:13px;
+           ">
+
+        A standard retail barcode normally contains
+        only the product identifier.
+
+        Product name, brand, pack size, MRP etc.
+        require a product database lookup.
+
+      </div>
+
+    `;
+
+    return;
+  }
+
+
+
+  /*
+  --------------------------------
+  NORMAL TEXT
+  --------------------------------
+  */
+
+  contentType.innerText =
+    "Text / Encoded Data";
+
+  info.innerHTML = `
+
+    <div class="info-line">
+
+      <span class="info-label">
+        Encoded Information:
+      </span>
+
+      <br><br>
+
+      ${escapeHtml(value)}
+
+    </div>
+
+  `;
+
+}
+
+
+
+function parseWifiQR(value) {
+
+  let result = {};
+
+  value = value.replace(/^WIFI:/, "");
+
+  let sections = value.split(";");
+
+
+  sections.forEach(function(section) {
+
+    if (section.startsWith("S:")) {
+
+      result.ssid =
+        section.substring(2);
+
+    }
+
+    else if (section.startsWith("T:")) {
+
+      result.type =
+        section.substring(2);
+
+    }
+
+    else if (section.startsWith("P:")) {
+
+      result.password =
+        section.substring(2);
+
+    }
+
+  });
+
+
+  return result;
+
+}
+
+
+
+function stopScanner() {
+
+  if (!scanner || !scanning) {
+    return;
+  }
+
+
+  scanner.stop()
+
+  .then(function() {
+
+    scanning = false;
+
+    document.getElementById("status").innerText =
+      "Scanner stopped";
+
+  })
+
+  .catch(function(error) {
+
+    console.log(error);
+
+  });
+
+}
+
+
+
+function clearResult() {
+
+  lastScannedValue = "";
+
+  document.getElementById("codeValue").innerText =
+    "No code scanned";
+
+  document.getElementById("codeFormat").innerText =
+    "-";
+
+  document.getElementById("contentType").innerText =
+    "-";
+
+  document.getElementById("additionalInfo").innerHTML =
+    "";
+
+  document.getElementById("infoBox").style.display =
+    "none";
+
+}
+
+
+
+function escapeHtml(text) {
+
+  const div =
+    document.createElement("div");
+
+  div.textContent =
+    text;
+
+  return div.innerHTML;
+
+}
 
 </script>
 
