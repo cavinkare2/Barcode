@@ -1,3 +1,4 @@
+```html id="p9q2md"
 <!DOCTYPE html>
 <html>
 <head>
@@ -17,7 +18,7 @@
       font-family: Arial, sans-serif;
       background: #f4f6f8;
       margin: 0;
-      padding: 20px;
+      padding: 12px;
       color: #202124;
     }
 
@@ -29,41 +30,85 @@
     .card {
       background: white;
       border-radius: 16px;
-      padding: 20px;
+      padding: 16px;
       box-shadow: 0 5px 20px rgba(0,0,0,0.10);
     }
 
     h2 {
-      margin-top: 0;
+      margin: 0 0 8px;
       text-align: center;
     }
 
     .subtitle {
       text-align: center;
       color: #666;
-      font-size: 14px;
-      margin-bottom: 20px;
+      font-size: 13px;
+      margin-bottom: 12px;
     }
 
-    #reader {
-      width: 100%;
-      margin-top: 15px;
+    .result {
+      border: 1px solid #ddd;
       border-radius: 12px;
       overflow: hidden;
+      margin-bottom: 12px;
+    }
+
+    .result-title {
+      background: #f1f3f4;
+      padding: 10px 12px;
+      font-weight: bold;
+    }
+
+    .row {
+      padding: 9px 12px;
+      border-top: 1px solid #eee;
+    }
+
+    .label {
+      font-size: 11px;
+      color: #777;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+    }
+
+    .value {
+      font-size: 15px;
+      font-weight: 600;
+      word-break: break-word;
+    }
+
+    #codeValue {
+      font-size: 20px;
+    }
+
+    .info-box {
+      margin-bottom: 12px;
+      padding: 12px;
+      background: #f8f9fa;
+      border-radius: 10px;
+      display: none;
+    }
+
+    .info-line {
+      margin-bottom: 8px;
+    }
+
+    .info-label {
+      font-weight: bold;
     }
 
     .buttons {
       display: flex;
-      gap: 10px;
-      margin-bottom: 15px;
+      gap: 8px;
+      margin-bottom: 10px;
     }
 
     button {
       flex: 1;
       border: none;
       border-radius: 8px;
-      padding: 13px 10px;
-      font-size: 15px;
+      padding: 11px 8px;
+      font-size: 14px;
       font-weight: bold;
       cursor: pointer;
     }
@@ -83,67 +128,22 @@
       color: #202124;
     }
 
-    .result {
-      margin-top: 20px;
-      border: 1px solid #ddd;
+    #reader {
+      width: 100%;
       border-radius: 12px;
       overflow: hidden;
     }
 
-    .result-title {
-      background: #f1f3f4;
-      padding: 12px 15px;
-      font-weight: bold;
-    }
-
-    .row {
-      padding: 12px 15px;
-      border-top: 1px solid #eee;
-    }
-
-    .label {
-      font-size: 12px;
-      color: #777;
-      margin-bottom: 5px;
-      text-transform: uppercase;
-    }
-
-    .value {
-      font-size: 16px;
-      font-weight: 600;
-      word-break: break-word;
-    }
-
-    #codeValue {
-      font-size: 23px;
-    }
-
-    .info-box {
-      margin-top: 20px;
-      padding: 15px;
-      background: #f8f9fa;
-      border-radius: 10px;
-      display: none;
-    }
-
-    .info-line {
-      margin-bottom: 10px;
-    }
-
-    .info-label {
-      font-weight: bold;
+    .status {
+      text-align: center;
+      font-size: 13px;
+      color: #666;
+      margin: 8px 0 10px;
     }
 
     a {
       color: #1a73e8;
       word-break: break-all;
-    }
-
-    .status {
-      text-align: center;
-      font-size: 14px;
-      color: #666;
-      margin-top: 10px;
     }
   </style>
 </head>
@@ -157,13 +157,57 @@
     <h2>QR & Barcode Scanner</h2>
 
     <div class="subtitle">
-      Scan QR codes, EAN, UPC, Code 128 and other supported barcodes
+      Scan QR codes and normal product barcodes
     </div>
+
+
+    <!-- RESULT ABOVE CAMERA -->
+
+    <div class="result">
+
+      <div class="result-title">
+        Latest Scan
+      </div>
+
+      <div class="row">
+        <div class="label">Scanned Value</div>
+        <div class="value" id="codeValue">
+          No code scanned
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="label">Code Format</div>
+        <div class="value" id="codeFormat">
+          -
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="label">Content Type</div>
+        <div class="value" id="contentType">
+          -
+        </div>
+      </div>
+
+    </div>
+
+
+    <div class="info-box" id="infoBox">
+
+      <div class="label">
+        Additional Information
+      </div>
+
+      <div id="additionalInfo"></div>
+
+    </div>
+
 
     <div class="buttons">
 
       <button id="startBtn" onclick="startScanner()">
-        Start Scanner
+        Start
       </button>
 
       <button id="stopBtn" onclick="stopScanner()">
@@ -176,55 +220,15 @@
 
     </div>
 
-    <div id="reader"></div>
 
     <div class="status" id="status">
       Scanner not started
     </div>
 
 
-    <div class="result">
+    <!-- CAMERA BELOW RESULT -->
 
-      <div class="result-title">
-        Scan Result
-      </div>
-
-      <div class="row">
-        <div class="label">Scanned Value</div>
-        <div class="value" id="codeValue">
-          No code scanned
-        </div>
-      </div>
-
-
-      <div class="row">
-        <div class="label">Code Format</div>
-        <div class="value" id="codeFormat">
-          -
-        </div>
-      </div>
-
-
-      <div class="row">
-        <div class="label">Detected Content Type</div>
-        <div class="value" id="contentType">
-          -
-        </div>
-      </div>
-
-    </div>
-
-
-    <div class="info-box" id="infoBox">
-
-      <div class="label">
-        Additional Information Found
-      </div>
-
-      <div id="additionalInfo"></div>
-
-    </div>
-
+    <div id="reader"></div>
 
   </div>
 
@@ -277,7 +281,7 @@ function startScanner() {
     onScanSuccess,
 
     function(errorMessage) {
-      // Normal frame scanning errors are ignored
+      // Ignore frame scan errors
     }
 
   )
@@ -287,7 +291,7 @@ function startScanner() {
     scanning = true;
 
     document.getElementById("status").innerText =
-      "Scanner active - point camera at QR code or barcode";
+      "Scanner active - point camera at code";
 
   })
 
@@ -313,7 +317,6 @@ function onScanSuccess(decodedText, decodedResult) {
 
   let format = "Unknown";
 
-
   try {
 
     if (
@@ -329,15 +332,12 @@ function onScanSuccess(decodedText, decodedResult) {
     }
 
   } catch(error) {
-
     console.log(error);
-
   }
 
 
   document.getElementById("codeValue").innerText =
     decodedText;
-
 
   document.getElementById("codeFormat").innerText =
     format;
@@ -348,6 +348,15 @@ function onScanSuccess(decodedText, decodedResult) {
 
   document.getElementById("status").innerText =
     "Code scanned successfully";
+
+
+  /*
+   Optional vibration feedback
+  */
+
+  if (navigator.vibrate) {
+    navigator.vibrate(120);
+  }
 
 }
 
@@ -366,15 +375,8 @@ function analyseContent(value, format) {
 
 
   info.innerHTML = "";
-
   infoBox.style.display = "block";
 
-
-  /*
-  --------------------------------
-  URL
-  --------------------------------
-  */
 
   if (
     value.startsWith("http://") ||
@@ -388,7 +390,7 @@ function analyseContent(value, format) {
         <span class="info-label">Website:</span><br>
         <a href="${escapeHtml(value)}"
            target="_blank">
-           ${escapeHtml(value)}
+          ${escapeHtml(value)}
         </a>
       </div>
     `;
@@ -397,18 +399,11 @@ function analyseContent(value, format) {
   }
 
 
-
-  /*
-  --------------------------------
-  EMAIL
-  --------------------------------
-  */
-
   if (value.toLowerCase().startsWith("mailto:")) {
 
     contentType.innerText = "Email";
 
-    let email =
+    const email =
       value.substring(7);
 
     info.innerHTML = `
@@ -422,18 +417,11 @@ function analyseContent(value, format) {
   }
 
 
-
-  /*
-  --------------------------------
-  PHONE NUMBER
-  --------------------------------
-  */
-
   if (value.toLowerCase().startsWith("tel:")) {
 
     contentType.innerText = "Phone Number";
 
-    let number =
+    const number =
       value.substring(4);
 
     info.innerHTML = `
@@ -447,22 +435,14 @@ function analyseContent(value, format) {
   }
 
 
-
-  /*
-  --------------------------------
-  WIFI QR CODE
-  --------------------------------
-  */
-
   if (value.startsWith("WIFI:")) {
 
     contentType.innerText = "Wi-Fi Network";
 
-    let wifi =
+    const wifi =
       parseWifiQR(value);
 
     info.innerHTML = `
-
       <div class="info-line">
         <span class="info-label">Network:</span>
         ${escapeHtml(wifi.ssid || "Not available")}
@@ -477,19 +457,11 @@ function analyseContent(value, format) {
         <span class="info-label">Password:</span>
         ${escapeHtml(wifi.password || "Not available")}
       </div>
-
     `;
 
     return;
   }
 
-
-
-  /*
-  --------------------------------
-  GEO LOCATION
-  --------------------------------
-  */
 
   if (value.toLowerCase().startsWith("geo:")) {
 
@@ -505,13 +477,6 @@ function analyseContent(value, format) {
     return;
   }
 
-
-
-  /*
-  --------------------------------
-  SMS
-  --------------------------------
-  */
 
   if (
     value.toLowerCase().startsWith("sms:") ||
@@ -530,13 +495,6 @@ function analyseContent(value, format) {
   }
 
 
-
-  /*
-  --------------------------------
-  VCARD
-  --------------------------------
-  */
-
   if (
     value.toUpperCase().includes("BEGIN:VCARD")
   ) {
@@ -548,6 +506,7 @@ function analyseContent(value, format) {
       <pre style="
         white-space:pre-wrap;
         word-break:break-word;
+        margin:0;
       ">${escapeHtml(value)}</pre>
     `;
 
@@ -555,57 +514,23 @@ function analyseContent(value, format) {
   }
 
 
-
-  /*
-  --------------------------------
-  STANDARD NUMERIC BARCODE
-  --------------------------------
-  */
-
   if (/^\d+$/.test(value)) {
 
     contentType.innerText =
       "Numeric Barcode / Product Code";
 
-    let extra = "";
+    let standard = "Unknown / Generic";
 
     if (value.length === 13) {
-
-      extra = `
-        <div class="info-line">
-          <span class="info-label">
-            Likely Standard:
-          </span>
-          EAN-13 / GTIN-13
-        </div>
-      `;
-
+      standard = "EAN-13 / GTIN-13";
     }
 
     else if (value.length === 12) {
-
-      extra = `
-        <div class="info-line">
-          <span class="info-label">
-            Likely Standard:
-          </span>
-          UPC-A / GTIN-12
-        </div>
-      `;
-
+      standard = "UPC-A / GTIN-12";
     }
 
     else if (value.length === 8) {
-
-      extra = `
-        <div class="info-line">
-          <span class="info-label">
-            Likely Standard:
-          </span>
-          EAN-8
-        </div>
-      `;
-
+      standard = "EAN-8";
     }
 
 
@@ -620,58 +545,38 @@ function analyseContent(value, format) {
 
       <div class="info-line">
         <span class="info-label">
-          Number of Digits:
+          Digits:
         </span>
         ${value.length}
       </div>
 
-      ${extra}
-
-      <div class="info-line"
-           style="
-             margin-top:15px;
-             color:#666;
-             font-size:13px;
-           ">
-
-        A standard retail barcode normally contains
-        only the product identifier.
-
-        Product name, brand, pack size, MRP etc.
-        require a product database lookup.
-
+      <div class="info-line">
+        <span class="info-label">
+          Likely Standard:
+        </span>
+        ${standard}
       </div>
 
+      <div style="
+        font-size:12px;
+        color:#666;
+        margin-top:8px;
+      ">
+        Product name, brand, pack size and MRP normally require a database lookup.
+      </div>
     `;
 
     return;
   }
 
 
-
-  /*
-  --------------------------------
-  NORMAL TEXT
-  --------------------------------
-  */
-
   contentType.innerText =
     "Text / Encoded Data";
 
   info.innerHTML = `
-
     <div class="info-line">
-
-      <span class="info-label">
-        Encoded Information:
-      </span>
-
-      <br><br>
-
       ${escapeHtml(value)}
-
     </div>
-
   `;
 
 }
@@ -680,38 +585,27 @@ function analyseContent(value, format) {
 
 function parseWifiQR(value) {
 
-  let result = {};
+  const result = {};
 
   value = value.replace(/^WIFI:/, "");
 
-  let sections = value.split(";");
-
+  const sections = value.split(";");
 
   sections.forEach(function(section) {
 
     if (section.startsWith("S:")) {
-
-      result.ssid =
-        section.substring(2);
-
+      result.ssid = section.substring(2);
     }
 
     else if (section.startsWith("T:")) {
-
-      result.type =
-        section.substring(2);
-
+      result.type = section.substring(2);
     }
 
     else if (section.startsWith("P:")) {
-
-      result.password =
-        section.substring(2);
-
+      result.password = section.substring(2);
     }
 
   });
-
 
   return result;
 
@@ -725,7 +619,6 @@ function stopScanner() {
     return;
   }
 
-
   scanner.stop()
 
   .then(function() {
@@ -738,9 +631,7 @@ function stopScanner() {
   })
 
   .catch(function(error) {
-
     console.log(error);
-
   });
 
 }
