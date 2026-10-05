@@ -1,0 +1,202 @@
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Barcode Scanner</title>
+
+  <!-- Barcode / QR Scanner Library -->
+  <script src="https://unpkg.com/html5-qrcode"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .card {
+      max-width: 500px;
+      margin: auto;
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.12);
+    }
+
+    h2 {
+      margin-top: 0;
+    }
+
+    #reader {
+      width: 100%;
+      margin-top: 20px;
+    }
+
+    #resultBox {
+      margin-top: 20px;
+      padding: 18px;
+      border-radius: 10px;
+      background: #f0f0f0;
+    }
+
+    #barcodeResult {
+      font-size: 22px;
+      font-weight: bold;
+      word-break: break-all;
+    }
+
+    button {
+      padding: 12px 20px;
+      margin: 8px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    #startBtn {
+      background: #1a73e8;
+      color: white;
+    }
+
+    #stopBtn {
+      background: #d93025;
+      color: white;
+    }
+
+    #copyBtn {
+      background: #188038;
+      color: white;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="card">
+
+    <h2>Barcode Scanner</h2>
+
+    <button id="startBtn" onclick="startScanner()">
+      Start Scanner
+    </button>
+
+    <button id="stopBtn" onclick="stopScanner()">
+      Stop Scanner
+    </button>
+
+    <div id="reader"></div>
+
+    <div id="resultBox">
+      <div>Scanned Barcode</div>
+      <br>
+      <div id="barcodeResult">No barcode scanned</div>
+    </div>
+
+    <button id="copyBtn" onclick="copyBarcode()">
+      Copy Barcode
+    </button>
+
+  </div>
+
+
+<script>
+
+  let html5QrCode;
+  let lastBarcode = "";
+
+  function startScanner() {
+
+    html5QrCode = new Html5Qrcode("reader");
+
+    const config = {
+      fps: 10,
+      qrbox: {
+        width: 300,
+        height: 150
+      }
+    };
+
+    html5QrCode.start(
+      {
+        facingMode: "environment"
+      },
+      config,
+      barcodeScanned,
+      scanError
+    )
+    .catch(function(error) {
+      alert("Unable to start camera: " + error);
+    });
+
+  }
+
+
+  function barcodeScanned(decodedText, decodedResult) {
+
+    // Prevent repeatedly reading the same barcode
+    if (decodedText === lastBarcode) {
+      return;
+    }
+
+    lastBarcode = decodedText;
+
+    document.getElementById("barcodeResult").innerText = decodedText;
+
+    console.log("Barcode:", decodedText);
+
+    // Optional:
+    // stop scanner immediately after reading
+    // stopScanner();
+  }
+
+
+  function scanError(errorMessage) {
+    // Ignore normal scanning errors
+  }
+
+
+  function stopScanner() {
+
+    if (!html5QrCode) {
+      return;
+    }
+
+    html5QrCode.stop()
+      .then(function() {
+        console.log("Scanner stopped");
+      })
+      .catch(function(error) {
+        console.log(error);
+      });
+
+  }
+
+
+  function copyBarcode() {
+
+    const barcode =
+      document.getElementById("barcodeResult").innerText;
+
+    if (
+      !barcode ||
+      barcode === "No barcode scanned"
+    ) {
+      return;
+    }
+
+    navigator.clipboard.writeText(barcode);
+
+    alert("Barcode copied: " + barcode);
+  }
+
+</script>
+
+</body>
+</html>
+```
